@@ -1,7 +1,11 @@
-package com.bcbs.member.entity;
+package com.bcbs.member.service.entity;
 
+import com.bcbs.member.service.domain.MemberStatus;
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 
 @Entity
 @Table(name = "members")
@@ -9,7 +13,7 @@ public class Member {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
     @Column(name="member_id", nullable=false, unique=true, length=30)
     private String memberId;
@@ -23,8 +27,15 @@ public class Member {
     @Column(name="date_of_birth")
     private LocalDate dateOfBirth;
 
+    @Enumerated(EnumType.STRING)
     @Column(name="status", nullable=false, length=20)
-    private String status;
+    private MemberStatus status;
+
+    @Column(name = "created_at", nullable=false, updatable = false)
+    private OffsetDateTime createdAt;
+
+    @Column(name = "updated_at", nullable=false)
+    private OffsetDateTime updatedAt;
 
     protected Member(){
         //required by JPA
@@ -35,7 +46,7 @@ public class Member {
             String firstName,
             String lastName,
             LocalDate dateOfBirth,
-            String status){
+            MemberStatus status){
         this.memberId = memberId;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -43,7 +54,7 @@ public class Member {
         this.status = status;
     }
 
-    public long getId(){
+    public Long getId(){
         return id;
     }
 
@@ -63,7 +74,35 @@ public class Member {
         return dateOfBirth;
     }
 
-    public String getStatus(){
+    public MemberStatus getStatus(){
         return status;
+    }
+
+    public void updateDetails(String firstName, String lastName, LocalDate dateOfBirth, MemberStatus status) {
+
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.dateOfBirth = dateOfBirth;
+        this.status = status;
+    }
+
+    @PrePersist
+    protected void onCreate(){
+        OffsetDateTime now = OffsetDateTime.now();
+        createdAt = now;
+        updatedAt = now;
+    }
+
+    @PreUpdate
+    protected void onUpdate(){
+        updatedAt = OffsetDateTime.now();
+    }
+
+    public OffsetDateTime getCreatedAt(){
+        return createdAt;
+    }
+
+    public OffsetDateTime getUpdatedAt(){
+        return updatedAt;
     }
 }

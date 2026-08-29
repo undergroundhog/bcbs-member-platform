@@ -1,4 +1,4 @@
-package com.bcbs.member;
+package com.bcbs.member.service;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
