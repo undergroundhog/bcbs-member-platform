@@ -26,3 +26,13 @@ jobs:
 
       - name: Run tests
         run: mvn clean test
+
+      - name: Package application
+        run: mvn package -DskipTests
+
+      - name: Upload application JAR
+        uses: actions/upload-artiface@v4
+        with:
+          name: bcbs-member-platform
+          path: target/*.jar
+          if-no-files-found: error
