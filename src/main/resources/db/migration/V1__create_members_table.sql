@@ -1,0 +1,11 @@
+CREATE TABLE members (
+    id BIGSERIAL PRIMARY KEY,
+    member_id VARCHAR(30) NOT NULL UNIQUE,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    date_of_birth DATE,
+    status VARCHAR(20) NOT NULL
+);
+
+CREATE INDEX idx_member_member_id
+    ON members(member_id);
