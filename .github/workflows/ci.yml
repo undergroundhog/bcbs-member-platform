@@ -83,6 +83,9 @@ jobs:
           
           echo "Render deployment failed health verification"
           exit 1
+
+      - name: Package application
+        run: mvn package -DskipTests -Dbuild.version=${{ github.sha }}
           
 
 permissions:
