@@ -17,14 +17,14 @@
 
     <groupId>com.bcbs</groupId>
     <artifactId>bcbs-member-platform</artifactId>
-    <version>${build.version}</version>
+    <version>1.0.0-SNAPSHOT</version>
 
     <name>bcbs-member-platform</name>
     <description>BCBS Legacy Modernization POC</description>
 
     <properties>
         <java.version>17</java.version>
-        <build.version>1.0.0-SNAPSHOT</build.version>
+        <git.commit>local</git.commit>
     </properties>
 
     <dependencyManagement>
@@ -134,6 +134,13 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+
+                <configuration>
+                    <additionalProperties>
+                        <commit>${git.commit}</commit>
+                    </additionalProperties>
+                </configuration>
+
                 <executions>
                     <execution>
                         <goals>
