@@ -17,12 +17,11 @@
 
     <groupId>com.bcbs</groupId>
     <artifactId>bcbs-member-platform</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>${build.version}</version>
 
     <name>bcbs-member-platform</name>
     <description>BCBS Legacy Modernization POC</description>
 
-    <version>${build.version}</version>
     <properties>
         <java.version>17</java.version>
         <build.version>1.0.0-SNAPSHOT</build.version>
@@ -128,19 +127,10 @@
             <artifactId>testcontainers-junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
-
-
-
     </dependencies>
 
     <build>
         <plugins>
-
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
-
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
@@ -152,8 +142,6 @@
                     </execution>
                 </executions>
             </plugin>
-
         </plugins>
     </build>
-
 </project>

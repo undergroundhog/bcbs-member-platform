@@ -30,7 +30,7 @@ management:
         enabled: true
 
   info:
-    env:
+    build:
       enabled: true
 
 info:
