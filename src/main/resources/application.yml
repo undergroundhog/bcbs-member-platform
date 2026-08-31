@@ -3,9 +3,9 @@ spring:
     name: bcbs-member-platform
 
   datasource:
-    url: jdbc:postgresql://localhost:5433/bcbs
-    username: bcbs_user
-    password: bcbs_password
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/bcbs}
+    username: ${SPRING_DATASOURCE_USERNAME:bcbs_user}
+    password: ${SPRING_DATASOURCE_PASSWORD:bcbs_password}
 
   jpa:
     hibernate:
