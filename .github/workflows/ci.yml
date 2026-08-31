@@ -39,3 +39,26 @@ jobs:
 
       - name: Build Docker image
         run: docker build -t bcbs-member-plaftform:${{ github.sha }} .
+
+      - name: Log in to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{github.actor}}
+          password: ${{secrets.GITHUB_TOKEN}}
+
+      - name: Tag Docker image
+        if: github.event_name != 'pull_request'
+        run: |
+          docker tag bcbs-member-platform: ${{github.sha}} \
+          ghcr.io/undergroundhog/bcbs-member-platform: ${{github.sha}}
+          
+          docker tag bcbs-member-platform:${{github.sha}} \
+          ghcr.io/undergroundhog/bcbs-member-platform:latest
+
+      - name: Push Docker image
+        if: github.event_name != 'pull_request'
+        run: |
+          docker push ghcr.io/undergroundhog/bcbs-member-platform:${{github.sha}}
+          docker push ghcr.io/undergroundhog/bcbs-member-platform:latest
