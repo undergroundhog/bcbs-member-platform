@@ -70,7 +70,7 @@ jobs:
             STATUS=$(curl --silent --output /dev/null --write-out "%{http_code}" \
               'https://bcbs-member-platform-latest.onrender.com/actuator/health')
             
-            if [["$STATUS" = "200" ]]; then
+            if [["$STATUS" == "200" ]]; then
               echo "Render deployment is healthy"
               exit 0
             fi
