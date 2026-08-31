@@ -54,6 +54,11 @@ jobs:
           docker push ghcr.io/undergroundhog/bcbs-member-platform:${{github.sha}}
           docker push ghcr.io/undergroundhog/bcbs-member-platform:latest
 
+      - name: Deploy to Render
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: curl --fail --show-error --silent "${{ secrets.RENDER_DEPLOY_HOOK_URL}}"
+
 permissions:
   contents: read
   packages: write
+
