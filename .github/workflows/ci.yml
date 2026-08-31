@@ -53,3 +53,7 @@ jobs:
         run: |
           docker push ghcr.io/undergroundhog/bcbs-member-platform:${{github.sha}}
           docker push ghcr.io/undergroundhog/bcbs-member-platform:latest
+
+permissions:
+  contents: read
+  packages: write
