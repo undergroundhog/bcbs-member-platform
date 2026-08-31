@@ -32,6 +32,8 @@ management:
   info:
     build:
       enabled: true
+    env:
+      enabled: true
 
 info:
   app:

@@ -65,24 +65,29 @@ jobs:
       - name: Verify Render deployment
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: | 
-          echo "Waiting for Render deployment to become healthy..."
+          echo "Waiting for commit ${{ github.sha }} to become live..."
+          
           i=1
           while [ "$i" -le 30 ]; do
-            STATUS="$(curl --silent --output /dev/null --write-out "%{http_code}" \
-              'https://bcbs-member-platform-latest.onrender.com/actuator/health')"
+            INFO="$(curl -s 'https://bcbs-member-platform-latest.onrender.com/actuator/info')"
             
-            if [[ "$STATUS" = "200" ]]; then
-              echo "Render deployment is healthy"
+            echo "Attempt $i"
+            
+            if echo "$INFO" | grep -q '"version":"${{ github.sha }}"'; then
+              echo "Exact commit is live: ${{ github.sha }}"
               exit 0
             fi
-          
-            echo "Attempt $i: health check returned HTTP $STATUS"
+            
+            echo "Expected commit not live yet."
             sleep 10
             i=$((i+1))
           done
-          
-          echo "Render deployment failed health verification"
+        
+          echo "Deployment verification failed."
+          echo "Expected: ${{ github.sha }}"
+          echo "Actual response: $INFO"
           exit 1
+          
 
       - name: Package application
         run: mvn package -DskipTests -Dbuild.version=${{ github.sha }}
