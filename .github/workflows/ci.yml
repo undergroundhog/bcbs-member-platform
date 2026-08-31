@@ -15,10 +15,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Java 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '17'
@@ -51,11 +51,9 @@ jobs:
       - name: Tag Docker image
         if: github.event_name != 'pull_request'
         run: |
-          docker tag bcbs-member-platform: ${{github.sha}} \
-          ghcr.io/undergroundhog/bcbs-member-platform: ${{github.sha}}
+          docker tag bcbs-member-platform: ${{github.sha}} ghcr.io/undergroundhog/bcbs-member-platform: ${{github.sha}}
           
-          docker tag bcbs-member-platform:${{github.sha}} \
-          ghcr.io/undergroundhog/bcbs-member-platform:latest
+          docker tag bcbs-member-platform:${{github.sha}} ghcr.io/undergroundhog/bcbs-member-platform:latest
 
       - name: Push Docker image
         if: github.event_name != 'pull_request'
