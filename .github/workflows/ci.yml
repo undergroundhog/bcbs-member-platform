@@ -38,7 +38,9 @@ jobs:
           if-no-files-found: error
 
       - name: Build Docker image
-        run: docker build -t bcbs-member-plaftform:${{ github.sha }} .
+        run: docker build \
+          -t ghcr.io/undergroundhog/bcbs-member-platform:${{github.sha}} \
+          -t ghcr.io/undergroundhog/bcbs-member-platform:latest \
 
       - name: Log in to GHCR
         if: github.event_name != 'pull_request'
@@ -47,12 +49,6 @@ jobs:
           registry: ghcr.io
           username: ${{github.actor}}
           password: ${{secrets.GITHUB_TOKEN}}
-
-      - name: Tag Docker image
-        if: github.event_name != 'pull_request'
-        run: |
-          docker tag bcbs-member-platform:${{github.sha}} ghcr.io/undergroundhog/bcbs-member-platform:${{github.sha}}
-          docker tag bcbs-member-platform:${{github.sha}} ghcr.io/undergroundhog/bcbs-member-platform:latest
 
       - name: Push Docker image
         if: github.event_name != 'pull_request'
