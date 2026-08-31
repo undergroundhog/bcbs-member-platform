@@ -51,8 +51,7 @@ jobs:
       - name: Tag Docker image
         if: github.event_name != 'pull_request'
         run: |
-          docker tag bcbs-member-platform: ${{github.sha}} ghcr.io/undergroundhog/bcbs-member-platform: ${{github.sha}}
-          
+          docker tag bcbs-member-platform:${{github.sha}} ghcr.io/undergroundhog/bcbs-member-platform: ${{github.sha}}
           docker tag bcbs-member-platform:${{github.sha}} ghcr.io/undergroundhog/bcbs-member-platform:latest
 
       - name: Push Docker image
