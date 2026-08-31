@@ -91,7 +91,7 @@ jobs:
           
 
       - name: Package application
-        run: mvn package -DskipTests -Dbuild.commit=${{ github.sha }}
+        run: mvn package -DskipTests -Dgit.commit=${{ github.sha }}
           
 
 permissions:
