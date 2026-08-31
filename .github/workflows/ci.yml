@@ -36,3 +36,6 @@ jobs:
           name: bcbs-member-platform
           path: target/*.jar
           if-no-files-found: error
+
+      - name: Build Docker image
+        run: docker build -t bcbs-member-plaftform:${{ github.sha }} .
