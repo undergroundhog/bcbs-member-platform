@@ -38,9 +38,7 @@ jobs:
           if-no-files-found: error
 
       - name: Build Docker image
-        run: docker build \
-          -t ghcr.io/undergroundhog/bcbs-member-platform:${{github.sha}} \
-          -t ghcr.io/undergroundhog/bcbs-member-platform:latest \
+        run: docker build -t ghcr.io/undergroundhog/bcbs-member-platform:${{github.sha}} -t ghcr.io/undergroundhog/bcbs-member-platform:latest .
 
       - name: Log in to GHCR
         if: github.event_name != 'pull_request'
