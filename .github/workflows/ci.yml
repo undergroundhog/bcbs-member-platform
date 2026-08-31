@@ -62,8 +62,9 @@ jobs:
           --data-urlencode "imgURL=ghcr.io/undergroundhog/bcbs-member-platform:${{github.sha}}" \
           "${{ secrets.RENDER_DEPLOY_HOOK_URL}}"
       
-      - name: Verify Render deployment
+      - name: Verify exact Render deployment
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        shell: bash
         run: | 
           echo "Waiting for commit ${{ github.sha }} to become live..."
           
@@ -73,7 +74,7 @@ jobs:
             
             echo "Attempt $i"
             
-            if echo "$INFO" | grep -q '"version":"${{ github.sha }}"'; then
+            if echo "$INFO" | grep -q '"commit":"${{ github.sha }}"'; then
               echo "Exact commit is live: ${{ github.sha }}"
               exit 0
             fi
