@@ -54,13 +54,34 @@ jobs:
           docker push ghcr.io/undergroundhog/bcbs-member-platform:${{github.sha}}
           docker push ghcr.io/undergroundhog/bcbs-member-platform:latest
 
-      - name: Deploy to Render
+      - name: Deploy exact image to Render
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           curl --fail --show-error --silent \
           --get \
           --data-urlencode "imgURL=ghcr.io/undergroundhog/bcbs-member-platform:${{github.sha}}" \
           "${{ secrets.RENDER_DEPLOY_HOOK_URL}}"
+      
+      - name: Verify Render deployment
+        if: github.event_name == 'push' & github.ref == 'refs/heads/main'
+        run: | 
+          echo "Waiting for Render deployment to become healthy..."
+          for i in (1...30}; do
+            STATUS=${curl --silent --ouput /dev/null --write-out "%{http_code}" \
+              https://bcbs-member-platform-latest.onrender.com/actuator/health}
+            
+            if ["$STATUS" = "200" ]; then
+              echo "Render deployment is healthy"
+              exit 0
+            fi
+          
+            echo "Attempt $i: health check returned HTTP $STATUS"
+            sleep 10
+          done
+          
+          echo "Render deployment failed health verification"
+          exit 1
+          
 
 permissions:
   contents: read
