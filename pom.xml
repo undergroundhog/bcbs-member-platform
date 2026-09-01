@@ -24,7 +24,7 @@
 
     <properties>
         <java.version>17</java.version>
-        <git.commit>local</git.commit>
+
     </properties>
 
     <dependencyManagement>
@@ -137,7 +137,7 @@
 
                 <configuration>
                     <additionalProperties>
-                        <commit>${git.commit}</commit>
+                        <commit>${env.GITHUB_SHA}</commit>
                     </additionalProperties>
                 </configuration>
 

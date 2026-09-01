@@ -93,7 +93,7 @@ jobs:
           
 
       - name: Package application
-        run: mvn package -DskipTests -Dgit.commit=${{ github.sha }}
+        run: mvn package -DskipTests
 
       - name: Verify build metadata in JAR
         run: |
