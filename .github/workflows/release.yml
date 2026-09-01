@@ -1,0 +1,62 @@
+name: Production Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  deploy-production:
+    runs-on: ubuntu-latest
+
+    persmissions:
+      contents: read
+      packages: read
+
+    steps:
+      - name: Log in to GHCR
+        uses: docker/login-actionv@3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify release image exists
+        run: |
+          echo "Checking image for commit ${{ github.sha }}"
+          
+          docker manifest inspect \
+            ghcr.io/undergroundhog/bcbs-member-platform: ${{ github.sha }}
+
+      - name: Deploy exact image to production
+        run: |
+          curl --fail --show-error --silent \
+            --get \
+            --data-urlencode "imgURL=ghcr.io/undergroundhog/bcbs-member-platform:${{ github.sha }}" \
+            "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
+
+      - name: Verify exact production deployment
+        shell: bash
+        run: |
+          echo "Waiting for comit ${{ github.sha }} to become live in production..."
+          
+          i=1
+          while [ "$i" -le 30 ]; do
+            INFO="$(curl -s --connect-timeout 5 --max-time 10 \
+              'https://bcbs-member-platform-latest.onrender.com/actuator/info' || true)"
+            
+            echo "Attempt $i"
+            
+            if echo "$INFO" | grep -q '"commit":"${{ github.sha }}"'; then
+              echo "Exact commit is live in production: ${{ github.sha }}"
+              exit 0
+            fi
+            
+            echo "Expected commit not live in production yet."
+            sleep 10
+            i=$((i+1))
+          done
+          
+          echo "Production deployment verification failed."
+          echo "Expected commit: ${{ github.sha }}"
+          exit 1
