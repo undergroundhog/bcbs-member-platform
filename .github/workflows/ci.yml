@@ -70,7 +70,7 @@ jobs:
           
           i=1
           while [ "$i" -le 30 ]; do
-            INFO="$(curl -s 'https://bcbs-member-platform-latest.onrender.com/actuator/info')"
+            INFO="$(curl -s 'https://bcbs-member-platform-latest.onrender.com/actuator/info' || true)"
             
             echo "Attempt $i"
             
@@ -80,6 +80,8 @@ jobs:
             fi
             
             echo "Expected commit not live yet."
+            echo "Current response: $INFO"
+          
             sleep 10
             i=$((i+1))
           done
