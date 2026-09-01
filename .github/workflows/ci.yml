@@ -60,33 +60,33 @@ jobs:
           curl --fail --show-error --silent \
           --get \
           --data-urlencode "imgURL=ghcr.io/undergroundhog/bcbs-member-platform:${{github.sha}}" \
-          "${{ secrets.RENDER_DEPLOY_HOOK_URL}}"
+          "${{ secrets.RENDER_STAGING_DEPLOY_HOOK_URL }}"
       
       - name: Verify exact Render deployment
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         shell: bash
         run: | 
-          echo "Waiting for commit ${{ github.sha }} to become live..."
+          echo "Waiting for commit ${{ github.sha }} to become live in staging..."
           
           i=1
           while [ "$i" -le 30 ]; do
-            INFO="$(curl -s 'https://bcbs-member-platform-latest.onrender.com/actuator/info' || true)"
+            INFO="$(curl -s 'https://bcbs-member-platform-staging.onrender.com/actuator/info' || true)"
             
             echo "Attempt $i"
             
             if echo "$INFO" | grep -q '"commit":"${{ github.sha }}"'; then
-              echo "Exact commit is live: ${{ github.sha }}"
+              echo "Exact commit is live in staging: ${{ github.sha }}"
               exit 0
             fi
             
-            echo "Expected commit not live yet."
+            echo "Expected commit not live in staging yet."
             echo "Current response: $INFO"
           
             sleep 10
             i=$((i+1))
           done
         
-          echo "Deployment verification failed."
+          echo "Staging deployment verification failed."
           echo "Expected: ${{ github.sha }}"
           echo "Actual response: $INFO"
           exit 1
