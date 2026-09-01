@@ -92,6 +92,12 @@ jobs:
 
       - name: Package application
         run: mvn package -DskipTests -Dgit.commit=${{ github.sha }}
+
+      - name: Verify build metadata in JAR
+        run: |
+          echo "Github SHA: ${{ github.sha }}"
+          echo "Build info inside JAR:"
+          unzip -p target/*.jar META-INF/build-info.properties
           
 
 permissions:
