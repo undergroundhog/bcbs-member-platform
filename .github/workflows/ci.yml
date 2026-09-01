@@ -24,11 +24,8 @@ jobs:
           java-version: '17'
           cache: maven
 
-      - name: Run tests
-        run: mvn clean test
-
-      - name: Package application
-        run: mvn package -DskipTests
+      - name: Run tests and quality gates
+        run: mvn clean verify -Dgit.commit=${{ github.sha }}
 
       - name: Upload application JAR
         uses: actions/upload-artifact@v4
