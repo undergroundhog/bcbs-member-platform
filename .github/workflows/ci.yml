@@ -27,6 +27,23 @@ jobs:
       - name: Run tests and quality gates
         run: mvn clean verify -Dgit.commit=${{ github.sha }}
 
+      - name: Upload JaCoCo report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with: jacoco-report
+        path: target/site/jacoco
+        if-no-files-found: warn
+
+      - name: Upload OWASP Dependency-Check reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-check-reports
+          path: |
+            target/dependency-check-report.html
+            target/dependency-check-report.json
+          if-no-files-found: warn
+
       - name: Upload application JAR
         uses: actions/upload-artifact@v4
         with:
@@ -97,6 +114,8 @@ jobs:
           echo "Github SHA: ${{ github.sha }}"
           echo "Build info inside JAR:"
           unzip -p target/*.jar META-INF/build-info.properties
+      
+      
           
 
 permissions:
