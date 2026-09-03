@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
 
-    persmissions:
+    permissions:
       contents: read
       packages: read
 
