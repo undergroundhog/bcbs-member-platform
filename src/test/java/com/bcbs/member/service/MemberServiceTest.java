@@ -31,15 +31,21 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+
+
+
 @ExtendWith(MockitoExtension.class)
 class MemberServiceTest {
     @Mock
     private MemberRepository memberRepository;
 
-    @InjectMocks
+
     private MemberService memberService;
 
     private Member member;
+
+    private SimpleMeterRegistry meterRegistry;
 
     @BeforeEach
     void setup() {
@@ -50,6 +56,8 @@ class MemberServiceTest {
                 LocalDate.of(1992, 8, 20),
                 MemberStatus.ACTIVE
         );
+        meterRegistry = new SimpleMeterRegistry();
+        memberService = new MemberService(memberRepository, meterRegistry);
     }
 
     @Test
@@ -337,5 +345,51 @@ class MemberServiceTest {
 
         verify(memberRepository)
                 .findByStatus(MemberStatus.ACTIVE, pageable);
+    }
+
+    @Test
+    void shouldIncrementCreatedMetric(){
+        Member member =new Member(
+                "M10001",
+                "John",
+                "Doe",
+                LocalDate.of(1990,1,1),
+                MemberStatus.ACTIVE
+        );
+
+        when(memberRepository.existsByMemberId(member.getMemberId()))
+                .thenReturn(false);
+        when(memberRepository.save(member))
+                .thenReturn(member);
+
+        memberService.createMember(member);
+
+        double count = meterRegistry
+                .counter(
+                        "members.created",
+                        "status",
+                        member.getStatus().name()
+                )
+                .count();
+
+        assertEquals(1.0, count);
+    }
+
+    @Test
+    void shouldIncrementDeletedMetric(){
+        when(memberRepository.findByMemberId(member.getMemberId()))
+                .thenReturn(Optional.of(member));
+
+        memberService.deleteMember(member.getMemberId());
+
+        double count = meterRegistry
+                .counter(
+                        "members.deleted",
+                        "status",
+                        member.getStatus().name()
+                )
+                .count();
+
+        assertEquals(1.0, count);
     }
 }
