@@ -4,6 +4,11 @@ spring:
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
 
+  security:
+    user: ${APP_SECURITY_USERNAME}
+    password: ${APP_SECURITY_PASSWORD}
+    roles: MEMBER_ADMIN,ACTUATOR
+
   jpa:
     show-sql: false
 
