@@ -7,25 +7,40 @@ import jakarta.validation.constraints.Size;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDate;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.PastOrPresent;
 
 @Schema(description="Request payload for creating a member")
 public class MemberRequest {
 
     @NotBlank
     @Size(max = 30)
+    @Pattern(
+            regexp = "^M\\d{5}$",
+            message = "memberId must match format M####"
+    )
     @Schema(example="M10001")
     private String memberId;
 
     @NotBlank
     @Size(max = 100)
+    @Pattern(
+            regexp = "^[\\p{L}][\\p{L} .'-]*$",
+            message = "firstName contains invalid characters"
+    )
     @Schema(example="John")
     private String firstName;
 
     @NotBlank
     @Size(max = 100)
+    @Pattern(
+            regexp = "^[\\p{L}][\\p{L} .'-]*$",
+            message = "lastName contains invalid characters"
+    )
     @Schema(example="Doe")
     private String lastName;
 
+    @PastOrPresent(message = "dateOfBirth must not be in the future")
     @Schema(example="1990-05-10")
     private LocalDate dateOfBirth;
 

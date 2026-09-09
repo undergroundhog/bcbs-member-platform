@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 
@@ -12,16 +13,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.postgresql.PostgreSQLContainer;
+import org.springframework.context.annotation.Import;
 
-import org.springframework.test.web.servlet.MockMvc;
 
-@Import(TestcontainersConfig.class)
+
 @SpringBootTest
 @AutoConfigureMockMvc
+@Import(TestcontainersConfig.class)
 class ActuatorHealthTest {
 
     @Autowired
@@ -56,4 +54,32 @@ class ActuatorHealthTest {
                 .andExpect(jsonPath("$.app.name")
                 .value("BCBS Member Platform"));
     }
+
+    @Test
+    void metrics_shouldReturn401_whenUnauthenticated() throws Exception {
+        mockMvc.perform(get("/actuator/metrics"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser(username = "member-admin", roles = "MEMBER_ADMIN")
+    void metrics_shouldReturn403_withoutActuatorRole() throws Exception {
+        mockMvc.perform(get("/actuator/metrics"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "actuator-user", roles = "ACTUATOR")
+    void metrics_shouldReturn200_withActuatorRole() throws Exception {
+        mockMvc.perform(get("/actuator/metrics"))
+                .andExpect(status().isOk());
+    }
+
+//    @Test
+//    @WithMockUser(username = "actuator-user", roles = "ACTUATOR")
+//    void unapprovedActuatorEndpoint_shouldBeDenied() throws Exception {
+//        mockMvc.perform(get("/actuator/env"))
+//                .andExpect(status().isForbidden());
+//    }
 }
+

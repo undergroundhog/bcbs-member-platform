@@ -1,4 +1,10 @@
 spring:
+  security:
+    user:
+      name: ${APP_SECURITY_USERNAME:bcbs-user}
+      password: ${APP_SECURITY_PASSWORD:bcbs-password}
+      roles: MEMBER_ADMIN,ACTUATOR
+
   application:
     name: bcbs-member-platform
 

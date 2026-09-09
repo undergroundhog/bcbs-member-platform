@@ -7,6 +7,7 @@ import com.bcbs.member.service.exception.MemberNotFoundException;
 import com.bcbs.member.service.service.MemberService;
 import com.bcbs.member.service.exception.DuplicateMemberException;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.MediaType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.data.domain.Page;
@@ -24,14 +25,23 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.postgresql.hostchooser.HostRequirement.any;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.anonymous;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.testcontainers.shaded.org.bouncycastle.asn1.x500.style.RFC4519Style.member;
 
+import com.bcbs.member.service.config.SecurityConfig;
 
+import org.springframework.security.test.context.support.WithMockUser;
+import static org.mockito.ArgumentMatchers.isNull;
 
 @WebMvcTest(MemberController.class)
-@Import(GlobalExceptionHandler.class)
+@Import(SecurityConfig.class)
+@WithMockUser(username = "test-admin",
+roles = {"MEMBER_ADMIN"}
+)
 class MemberControllerTest {
 
     @Autowired
@@ -355,5 +365,155 @@ class MemberControllerTest {
                 .andExpect(jsonPath("$.timestamp").exists());
     }
 
+    @Test
+    void getMembers_shouldReturn401_whenUnauthenticated() throws Exception {
+        mockMvc.perform(get("/api/v1/members")
+                .with(anonymous()))
+                .andExpect(status().isUnauthorized());
+    }
 
+    @Test
+    @WithMockUser(
+            username = "read-user",
+            roles = {"MEMBER_READ"}
+    )
+    void createMember_shouldReturn403_whenUserHasReadOnlyRole() throws Exception {
+        mockMvc.perform(post("/api/v1/members")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {
+                        "memberId": "MBR-9999",
+                        "firstName": "Read",
+                        "lastName": "Only",
+                        "dateOfBirth": "1990-01-01",
+                        "status": "ACTIVE"
+                        }
+                        """))
+        .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(
+            username = "read-user",
+            roles = {"MEMBER_READ"}
+    )
+    void getMembers_shouldReturn200_whenUserHasReadRole() throws Exception{
+        Page<Member> page = Page.empty();
+
+        when(memberService.getMembers(
+                isNull(),
+                        any(Pageable.class)))
+                .thenReturn(Page.empty());
+
+        mockMvc.perform(get("/api/v1/members"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void corsPreflight_shouldAllowConfigurationOrigin() throws Exception {
+        mockMvc.perform(options("/api/v1/members")
+                .header("Origin", "http://localhost:3000")
+                .header("Access-Control-Request-Method", "GET"))
+                .andExpect(status().isOk())
+                .andExpect(header().string(
+                        "Access-Control-Allow-Origin",
+                        "http://localhost:3000"
+                ));
+    }
+
+    @Test
+    void securityHeaders_shouldBePresent() throws Exception {
+        mockMvc.perform(get("/api/v1/members")
+                .with(anonymous()))
+                .andExpect(status().isUnauthorized())
+                .andExpect(header().string("X-Content-Type-Options", "nosniff"))
+                .andExpect(header().string("X-Frame-Options", "DENY"));
+    }
+
+    @Test
+    void createMember_shouldReturn400_whenMemberIdFormatIsInvalid() throws Exception {
+        mockMvc.perform(post("/api/v1/members")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {
+                        "memberId": "ABC123",
+                        "firstName": "John",
+                        "lastName": "Doe",
+                        "dateOfBirth": "1990-05-10",
+                        "status": "ACTIVE"
+                        """))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createMember_shouldReturn400_whenDateOfBirthIsInFuture() throws Exception {
+        mockMvc.perform(post("/api/v1/members")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {
+                        "memberId": "M10002",
+                        "firstName": "John",
+                        "lastName": "Doe",
+                        "dateOfBirth": "2099-05-10",
+                        "status": "ACTIVE"
+                        """))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createMember_shouldReturn400_whenNameContainsInvalidCharacters() throws Exception {
+        mockMvc.perform(post("/api/v1/members")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {
+                        "memberId": "M10003",
+                        "firstName": "John123",
+                        "lastName": "Doe",
+                        "dateOfBirth": "1990-05-10",
+                        "status": "ACTIVE"
+                        }
+                        """))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createMember_shouldReturn400_whenStatusIsInvalid() throws Exception {
+        mockMvc.perform(post("/api/v1/members")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {
+                        "memberId": "M10004",
+                        "firstName": "John",
+                        "lastName": "Doe",
+                        "dateOfBirth": "1990-05-10",
+                        "status": "UNKNOWN"
+                        }
+                        """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message")
+                        .value("Malformed request body"));
+    }
+
+    @Test
+    @WithMockUser(username = "read_user", roles = {"MEMBER_READ"})
+    void updateMember_shouldReturn403_whenUserHasReadOnlyRole() throws Exception {
+        mockMvc.perform(put("/api/v1/members/M10001")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {
+                        "memberId": "M10001",
+                        "firstName": "John",
+                        "lastName": "Doe",
+                        "dateOfBirth": "1990-05-10",
+                        "status": "ACTIVE"
+                        """))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "read-user", roles = {"MEMBER_READ"})
+    void deleteMember_shouldReturn403_whenUserHasReadOnlyRole() throws Exception {
+        mockMvc.perform(delete("/api/v1/members/M10001"))
+                .andExpect(status().isForbidden());
+    }
 }

@@ -15,6 +15,7 @@ import java.time.OffsetDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.HashMap;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -24,7 +25,7 @@ public class GlobalExceptionHandler {
             DuplicateMemberException exception){
         Map<String, Object> body = new LinkedHashMap<>();
 
-        body.put("timestamp", LocalDateTime.now());
+        body.put("timestamp", OffsetDateTime.now());
         body.put("status", HttpStatus.CONFLICT.value());
         body.put("error", "Conflict");
         body.put("message", exception.getMessage());
@@ -49,7 +50,7 @@ public class GlobalExceptionHandler {
 
         Map<String, Object> body = new LinkedHashMap<>();
 
-        body.put("timestamp", LocalDateTime.now());
+        body.put("timestamp", OffsetDateTime.now());
         body.put("status", HttpStatus.BAD_REQUEST.value());
         body.put("error", "Bad Request");
         body.put("message", "Validation failed");
@@ -65,7 +66,7 @@ public class GlobalExceptionHandler {
             MemberNotFoundException exception){
         Map<String, Object> body = new LinkedHashMap<>();
 
-        body.put("timestamp", LocalDateTime.now());
+        body.put("timestamp", OffsetDateTime.now());
         body.put("status", HttpStatus.NOT_FOUND.value());
         body.put("error", "Not Found");
         body.put("message", exception.getMessage());
@@ -78,7 +79,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<Map<String, Object>> handleConstraintViolation(
             ConstraintViolationException ex) {
-        Map<String, Object> body = new HashMap<>();
+        Map<String, Object> body = new LinkedHashMap<>();
 
         body.put("timestamp", OffsetDateTime.now());
         body.put("status", HttpStatus.BAD_REQUEST.value());
@@ -91,7 +92,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, Object>> handleIllegalArgument(
             IllegalArgumentException ex){
-        Map<String, Object> body = new HashMap<>();
+        Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", OffsetDateTime.now());
         body.put("status", HttpStatus.BAD_REQUEST.value());
         body.put("error", HttpStatus.BAD_REQUEST.getReasonPhrase());
@@ -103,7 +104,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<Map<String, Object>> handleTypeMismatch(
             MethodArgumentTypeMismatchException ex){
-        Map<String, Object> body = new HashMap<>();
+        Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", OffsetDateTime.now());
         body.put("status", HttpStatus.BAD_REQUEST.value());
         body.put("error", HttpStatus.BAD_REQUEST.getReasonPhrase());
@@ -113,6 +114,21 @@ public class GlobalExceptionHandler {
         );
 
         return ResponseEntity.badRequest().body(body);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Map<String, Object>> handleUnreadableMessage(
+            HttpMessageNotReadableException ex){
+        Map<String, Object> body = new LinkedHashMap<>();
+
+        body.put("timestamp", OffsetDateTime.now());
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("error", HttpStatus.BAD_REQUEST.getReasonPhrase());
+        body.put("message", "Malformed request body");
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(body);
     }
 
 }
